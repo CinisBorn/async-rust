@@ -1,10 +1,16 @@
 #[tokio::main]
 async fn main() {
-    // without the await, nothing occurs. 
-    async_world().await;
-    async_hello().await;
-   
-    tokio::spawn(async move { println!("Read Vagabound manga!") }).await.unwrap();
+    tokio::spawn(async move { 
+        async_hello().await;
+    });
+
+    tokio::spawn(async move {
+       async_world().await; 
+    });
+
+    tokio::spawn(async move {
+        println!("Starting...");
+    });
 }
 
 async fn async_world() {
