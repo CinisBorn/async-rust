@@ -1,21 +1,36 @@
+use std::{io::Write};
+use tokio::task::spawn_blocking;
+
 #[tokio::main]
 async fn main() {
-    tokio::spawn(async move { 
-        async_hello().await;
-    });
+    let mut handlers = Vec::new();
 
-    tokio::spawn(async move {
-       async_world().await; 
-    });
+    for t in 0..1_000 {
+        // A spanw_blocking creates a new OS thread if there are no idle blocking thread available. 
+        // 
+        // A blocking operation is invoked in a separated pool. 
+        // 
+        // The limit of blocking thread is 512 blocking threads. If it surpass the value, a blocking
+        // thread is put in a queue.
+        // 
+        // A blocking thread is similar to OS threads, but managed by tokio runtime. 
+        let handle = spawn_blocking(async move || {
+            let mut options = std::fs::OpenOptions::new()
+                .create(true) 
+                .write(true)
+                .open(format!("temp/f{}", t))
+                .unwrap();
 
-    tokio::spawn(async move {
-        println!("Starting...");
-    });
-}
+            options.write(b"Good morning!").unwrap();
+           
+        });
 
-async fn async_world() {
-    println!("world");
-}
-async fn async_hello() {
-    println!("Hello");
+        handlers.push(handle);
+    };
+
+    for h in handlers {
+        h.await.unwrap().await;
+    }
+
+    println!("Finished");
 }
