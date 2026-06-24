@@ -34,3 +34,16 @@ async fn main() {
 
     println!("Finished");
 }
+
+struct Next {}
+
+impl Future for Next {
+    type Output = String;
+    
+    fn poll(self: std::pin::Pin<&mut Self>, cx: &mut std::task::Context<'_>) -> std::task::Poll<Self::Output> {
+
+        let w = cx.waker();
+        
+        std::task::Poll::Pending
+    }
+}
